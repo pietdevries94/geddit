@@ -454,6 +454,39 @@ func (o *OAuthSession) Submit(ns *NewSubmission) (*Submission, error) {
 	return &submit.Json.Data, nil
 }
 
+// Submit accepts a NewSubmission type and submits a new link using OAuth.
+// Returns a Submission type.
+func (o *OAuthSession) SubmitCrosspost(ns *NewCrosspostSubmission) (*Submission, error) {
+
+	// Build form for POST request.
+	v := url.Values{
+		"title":              {ns.Title},
+		"crosspost_fullname": {ns.CrosspostFullname},
+		"sr":                 {ns.Subreddit},
+		"sendreplies":        {strconv.FormatBool(ns.SendReplies)},
+		"resubmit":           {strconv.FormatBool(ns.Resubmit)},
+		"api_type":           {"json"},
+		"kind":               {"crosspost"},
+		// TODO implement captchas for OAuth types
+		//"captcha":     {ns.Captcha.Response},
+		//"iden":        {ns.Captcha.Iden},
+	}
+	type submission struct {
+		Json struct {
+			Errors [][]string
+			Data   Submission
+		}
+	}
+	submit := &submission{}
+
+	err := o.postBody("https://oauth.reddit.com/api/submit", v, submit)
+	if err != nil {
+		return nil, err
+	}
+	// TODO check s.Errors and do something useful?
+	return &submit.Json.Data, nil
+}
+
 // Delete deletes a link or comment using the given full name ID.
 func (o *OAuthSession) Delete(d Deleter) error {
 	// Build form for POST request.
