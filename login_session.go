@@ -227,6 +227,35 @@ func (s LoginSession) Submit(ns *NewSubmission) error {
 	return nil
 }
 
+func (s LoginSession) SubmitCrosspost(ns *NewCrosspostSubmission) error {
+	req := &request{
+		url: "https://www.reddit.com/api/submit",
+		values: &url.Values{
+			"title":              {ns.Title},
+			"crosspost_fullname": {ns.CrosspostFullname},
+			"sr":                 {ns.Subreddit},
+			"kind":               {"crosspost"},
+			"sendreplies":        {strconv.FormatBool(ns.SendReplies)},
+			"resubmit":           {strconv.FormatBool(ns.Resubmit)},
+			"extension":          {"json"},
+			"captcha":            {ns.Captcha.Response},
+			"iden":               {ns.Captcha.Iden},
+			"uh":                 {s.modhash},
+		},
+		cookie:    s.cookie,
+		useragent: s.useragent,
+	}
+
+	body, err := req.getResponse()
+	if err != nil {
+		return err
+	}
+	if strings.Contains(body.String(), "error") {
+		return errors.New("failed to submit")
+	}
+	return nil
+}
+
 // Vote either votes or rescinds a vote for a Submission or Comment.
 func (s LoginSession) Vote(v Voter, vote Vote) error {
 	req := &request{

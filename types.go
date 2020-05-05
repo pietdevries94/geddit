@@ -40,6 +40,16 @@ func NewTextSubmission(sr, title, text string, replies bool, c *Captcha) *NewSub
 	return &NewSubmission{sr, title, text, true, replies, true, true, c}
 }
 
+type NewCrosspostSubmission struct {
+	Subreddit         string
+	Title             string
+	CrosspostFullname string
+	SendReplies       bool
+	Resubmit          bool
+	Save              bool
+	Captcha           *Captcha
+}
+
 // PopularitySort represents the possible ways to sort submissions by popularity.
 type PopularitySort string
 
